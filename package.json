@@ -8,7 +8,9 @@
     "install:all": "npm run install:backend && npm run install:frontend",
     "dev:backend": "cd backend && npm start",
     "dev:frontend": "cd frontend && npm run dev",
-    "build:frontend": "cd frontend && npm run build",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "build:backend": "cd backend && npm install && npx playwright install chromium --with-deps",
+    "build": "npm run build:frontend && npm run build:backend",
     "start": "cd backend && node server.js"
   },
   "keywords": [

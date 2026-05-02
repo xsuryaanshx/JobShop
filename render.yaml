@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: jobshop
+    runtime: node
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.0.0
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: PORT
+        value: 5000
