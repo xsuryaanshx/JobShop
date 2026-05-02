@@ -1,0 +1,185 @@
+{
+  "name": "Job Application Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "name": "Every 6 hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5000/api/scrape",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "{\n  \"keywords\": \"software engineer\",\n  \"location\": \"Remote\",\n  \"sources\": [\"linkedin\", \"indeed\"]\n}"
+      },
+      "name": "Scrape Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5000/api/jobs?status=new&limit=50",
+        "method": "GET"
+      },
+      "name": "Get New Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const jobs = items[0].json;\nconst highMatchJobs = jobs.filter(job => job.match_score >= 70);\n\nreturn highMatchJobs.map(job => ({ json: job }));"
+      },
+      "name": "Filter High Match",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:5000/api/tailor-cv/{{$json.id}}",
+        "method": "POST"
+      },
+      "name": "Tailor CV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:5000/api/apply/{{$json.id}}",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"tailored_cv\": \"{{$json.tailored_cv}}\",\n  \"cover_letter\": \"{{$json.cover_letter}}\"\n}"
+      },
+      "name": "Submit Application",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const applied = items.length;\nconst timestamp = new Date().toISOString();\n\nreturn [{\n  json: {\n    applied_count: applied,\n    timestamp: timestamp,\n    message: `Successfully applied to ${applied} jobs`\n  }\n}];"
+      },
+      "name": "Log Results",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "mode": "webhook",
+        "path": "manual-trigger"
+      },
+      "name": "Manual Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 500]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5000/api/auto-apply",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\n  \"minMatchScore\": 70,\n  \"limit\": 10\n}"
+      },
+      "name": "Manual Auto Apply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 500]
+    }
+  ],
+  "connections": {
+    "Every 6 hours": {
+      "main": [
+        [
+          {
+            "node": "Scrape Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Jobs": {
+      "main": [
+        [
+          {
+            "node": "Get New Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get New Jobs": {
+      "main": [
+        [
+          {
+            "node": "Filter High Match",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter High Match": {
+      "main": [
+        [
+          {
+            "node": "Tailor CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tailor CV": {
+      "main": [
+        [
+          {
+            "node": "Submit Application",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submit Application": {
+      "main": [
+        [
+          {
+            "node": "Log Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Webhook": {
+      "main": [
+        [
+          {
+            "node": "Manual Auto Apply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

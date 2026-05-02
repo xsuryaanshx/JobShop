@@ -1,0 +1,26 @@
+{
+  "name": "job-swipe-automation",
+  "version": "1.0.0",
+  "description": "Automated job application system with Tinder-style swipe interface",
+  "scripts": {
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "dev:backend": "cd backend && npm start",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "cd backend && node server.js"
+  },
+  "keywords": [
+    "job-automation",
+    "openrouter",
+    "playwright",
+    "react",
+    "framer-motion"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
